@@ -5,7 +5,7 @@ End-to-end pipeline that takes a single domain PDF (pharmacology/pharma R&D corp
 This repo is a hands-on demonstration of the **continued-pretraining → SFT → DPO** workflow used in real instruction-tuned model pipelines, implemented twice:
 
 - `huggingface/` — Transformers + PEFT + TRL (Google Colab)
-- `unsloth/` — Unsloth-accelerated version *(coming soon)*
+- `unsloth/` — Unsloth-accelerated version (Google Colab)
 
 ---
 
