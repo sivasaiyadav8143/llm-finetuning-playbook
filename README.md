@@ -71,7 +71,7 @@ All three stages are trained on the **same small pharma corpus** (Metformin phar
 │   ├── pharma_paragraph_process.jsonl          # cleaned paragraphs (Stage 1 input)
 │   ├── pharma_instruction_dataset.jsonl        # instruction/response pairs (Stage 2)
 │   └── pharma_preference_dataset.jsonl         # prompt/chosen/rejected pairs (Stage 3)
-├── code/
+├── huggingface/
 │   └── End_to_End_LLM_Fine_Tuning_HF.ipynb     # full HF + PEFT + TRL pipeline (Colab)
 ├── unsloth/
 │   └── (coming soon)
