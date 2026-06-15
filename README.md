@@ -277,8 +277,6 @@ Each record is formatted into an Alpaca-style prompt:
 | 2. Instruction (SFT) | [`SivaSai8143/pharma-tinyllama-instruction-lora-adapter`](https://huggingface.co/SivaSai8143/pharma-tinyllama-instruction-lora-adapter) | [`SivaSai8143/pharma-tinyllama-instruction-merged`](https://huggingface.co/SivaSai8143/pharma-tinyllama-instruction-merged) |
 | 3. Preference (DPO) | [`SivaSai8143/pharma-tinyllama-dpo-lora-adapter`](https://huggingface.co/SivaSai8143/pharma-tinyllama-dpo-lora-adapter) | [`SivaSai8143/pharma-tinyllama-dpo-merged`](https://huggingface.co/SivaSai8143/pharma-tinyllama-dpo-merged) |
 
-> Note: repos are currently private.
-
 ---
 
 ## Key Engineering Decisions
