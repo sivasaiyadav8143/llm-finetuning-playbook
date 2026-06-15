@@ -67,25 +67,12 @@ All three stages are trained on the **same small pharma corpus** (Metformin phar
 ```text
 .
 ├── data/
-│   ├── Metformin-Lipid-Therapy-Knowledge.pdf
-│   ├── pharma_paragraph_processed.jsonl
-│   ├── pharma_instruction_dataset.jsonl
-│   └── pharma_preference_dataset.jsonl
-├── adapters/
-│   ├── stage1_non_instruction/
-│   │   ├── adapter_model.safetensors
-│   │   ├── adapter_config.json
-│   │   └── tokeniser files...
-│   ├── stage2_instruction/
-│   │   ├── adapter_model.safetensors
-│   │   ├── adapter_config.json
-│   │   └── tokeniser files...
-│   └── stage3_dpo/
-│       ├── adapter_model.safetensors
-│       ├── adapter_config.json
-│       └── tokeniser files...
+│   ├── Metformin-Lipid-Therapy-Knowledge.pdf   # source domain corpus
+│   ├── pharma_paragraph_process.jsonl          # cleaned paragraphs (Stage 1 input)
+│   ├── pharma_instruction_dataset.jsonl        # instruction/response pairs (Stage 2)
+│   └── pharma_preference_dataset.jsonl         # prompt/chosen/rejected pairs (Stage 3)
 ├── huggingface/
-│   └── End_to_End_LLM_Fine_Tuning_HF.ipynb
+│   └── End_to_End_LLM_Fine_Tuning_HF.ipynb     # full HF + PEFT + TRL pipeline (Colab)
 ├── unsloth/
 │   └── (coming soon)
 └── README.md
