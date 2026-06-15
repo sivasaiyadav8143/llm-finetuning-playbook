@@ -1,6 +1,6 @@
 # Pharma-Domain LLM Fine-Tuning: Non-Instruction → Instruction → Preference (DPO)
 
-End-to-end pipeline that takes a single domain PDF (pharmacology / pharma R&D corpus) and progressively specializes a base LLM through **three sequential LoRA fine-tuning stages**, each stage building on the merged output of the previous one.
+End-to-end pipeline that takes a single domain PDF (pharmacology/pharma R&D corpus) and progressively specialises a base LLM through **three sequential LoRA fine-tuning stages**, each stage building on the merged output of the previous one.
 
 This repo is a hands-on demonstration of the **continued-pretraining → SFT → DPO** workflow used in real instruction-tuned model pipelines, implemented twice:
 
@@ -27,8 +27,8 @@ Pharma PDF (raw domain text)
         │  load as new base, attach fresh LoRA
         ▼
 ┌───────────────────────────────────────────┐
-│ Stage 2 — Instruction Fine-Tuning (SFT)    │
-│ Alpaca-style instruction/response data     │
+│ Stage 2 — Instruction Fine-Tuning (SFT)   │
+│ Alpaca-style instruction/response data    │
 └───────────────────────────────────────────┘
         │  save adapter → merge adapter into base
         ▼
@@ -36,15 +36,15 @@ Pharma PDF (raw domain text)
         │  load as new base, attach fresh LoRA
         ▼
 ┌───────────────────────────────────────────┐
-│ Stage 3 — Preference Tuning (DPO)          │
-│ prompt / chosen / rejected pairs           │
+│ Stage 3 — Preference Tuning (DPO)         │
+│ prompt / chosen / rejected pairs          │
 └───────────────────────────────────────────┘
         │  save adapter → merge adapter into base
         ▼
    Final Merged Preference-Tuned Model
 ```
 
-Each stage produces **three artifacts**: the LoRA adapter, the tokenizer, and the full merged model (base + adapter) — and the merged model from stage *N* becomes the base model loaded for stage *N+1*.
+Each stage produces **three artifacts**: the LoRA adapter, the tokeniser, and the full merged model (base + adapter) — and the merged model from stage *N* becomes the base model loaded for stage *N+1*.
 
 ---
 
@@ -67,12 +67,25 @@ All three stages are trained on the **same small pharma corpus** (Metformin phar
 ```text
 .
 ├── data/
-│   ├── Metformin-Lipid-Therapy-Knowledge.pdf   # source domain corpus
-│   ├── pharma_paragraph_process.jsonl          # cleaned paragraphs (Stage 1 input)
-│   ├── pharma_instruction_dataset.jsonl        # instruction/response pairs (Stage 2)
-│   └── pharma_preference_dataset.jsonl         # prompt/chosen/rejected pairs (Stage 3)
+│   ├── Metformin-Lipid-Therapy-Knowledge.pdf
+│   ├── pharma_paragraph_process.jsonl
+│   ├── pharma_instruction_dataset.jsonl
+│   └── pharma_preference_dataset.jsonl
+├── adapters/
+│   ├── stage1_non_instruction/
+│   │   ├── adapter_model.safetensors
+│   │   ├── adapter_config.json
+│   │   └── tokeniser files...
+│   ├── stage2_instruction/
+│   │   ├── adapter_model.safetensors
+│   │   ├── adapter_config.json
+│   │   └── tokeniser files...
+│   └── stage3_dpo/
+│       ├── adapter_model.safetensors
+│       ├── adapter_config.json
+│       └── tokeniser files...
 ├── huggingface/
-│   └── End_to_End_LLM_Fine_Tuning_HF.ipynb     # full HF + PEFT + TRL pipeline (Colab)
+│   └── End_to_End_LLM_Fine_Tuning_HF.ipynb
 ├── unsloth/
 │   └── (coming soon)
 └── README.md
@@ -100,10 +113,10 @@ q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj
 
 ### Data Pipeline
 1. Extract text per page from the PDF with PyMuPDF
-2. Clean & normalize (Unicode NFKC normalization, de-hyphenation, whitespace/page-number cleanup)
+2. Clean & normalise (Unicode NFKC normalisation, de-hyphenation, whitespace/page-number cleanup)
 3. Split into paragraph-level records, dropping paragraphs under `min_chars_per_paragraph`
 4. Convert to a Hugging Face `Dataset`, train/validation split
-5. Tokenize (no padding), then pack tokens into fixed-size `block_size` blocks for efficient causal LM training (labels = input_ids)
+5. Tokenise (no padding), then pack tokens into fixed-size `block_size` blocks for efficient causal LM training (labels = input_ids)
 
 ### Config
 | Parameter | Value |
@@ -128,7 +141,7 @@ q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj
 | `save_total_limit` | 2 |
 
 ### Training
-- Quantized 4-bit base model (`BitsAndBytesConfig`, `nf4`, double quant) prepared via `prepare_model_for_kbit_training`
+- Quantised 4-bit base model (`BitsAndBytesConfig`, `nf4`, double quant) prepared via `prepare_model_for_kbit_training`
 - `DataCollatorForLanguageModeling(mlm=False)`
 - Trained with `transformers.Trainer`
 
@@ -151,7 +164,7 @@ q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj
 - Metformin pharmacology, pharmacokinetics, safety, clinical use & endpoints
 - Lipid-lowering therapy (atorvastatin + ezetimibe), familial hypercholesterolemia
 - mRNA vaccine platforms and immune response
-- AI in drug discovery, lead optimization, ADME/toxicology, regulatory AI
+- AI in drug discovery, lead optimisation, ADME/toxicology, regulatory AI
 - Clinical trial terminology and pharmacovigilance
 
 **Example record:**
@@ -176,7 +189,7 @@ Each record is formatted into an Alpaca-style prompt:
 
 ### Approach
 - **Base for this stage = merged Stage-1 model** (loaded in 4-bit), with a **new LoRA adapter** attached (continuing as a fresh adapter on top of the domain-adapted merged weights, rather than continuing to train the Stage-1 adapter directly)
-- Tokenized with `max_length=512`, padding to max length, labels masked with `-100` on padding tokens
+- Tokenised with `max_length=512`, padding to max length, labels masked with `-100` on padding tokens
 - `DataCollatorForLanguageModeling(mlm=False)`, trained with `transformers.Trainer`
 
 ### LoRA Config (Stage 2)
@@ -211,10 +224,10 @@ Each record is formatted into an Alpaca-style prompt:
 
 ## Stage 3 — Preference Tuning with DPO
 
-**Goal:** Align the instruction-tuned model toward higher-quality answers using Direct Preference Optimization ([Rafailov et al., 2023](https://arxiv.org/pdf/2305.18290)).
+**Goal:** Align the instruction-tuned model toward higher-quality answers using Direct Preference Optimisation ([Rafailov et al., 2023](https://arxiv.org/pdf/2305.18290)).
 
 ### Data
-`pharma_preference_dataset.jsonl` — 48 `prompt / chosen / rejected` triples, built on the same instruction prompts as Stage 2. `chosen` responses are the accurate domain answers; `rejected` responses are plausible-sounding but factually wrong or off-target answers.
+`pharma_preference_dataset.jsonl` — 48 `prompt / chosen/rejected` triples, built on the same instruction prompts as Stage 2. `chosen` responses are the accurate domain answers; `rejected` responses are plausible-sounding but factually wrong or off-target answers.
 
 **Example record:**
 ```json
