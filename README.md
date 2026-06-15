@@ -68,7 +68,7 @@ All three stages are trained on the **same small pharma corpus** (Metformin phar
 .
 ├── data/
 │   ├── Metformin-Lipid-Therapy-Knowledge.pdf
-│   ├── pharma_paragraph_process.jsonl
+│   ├── pharma_paragraph_processed.jsonl
 │   ├── pharma_instruction_dataset.jsonl
 │   └── pharma_preference_dataset.jsonl
 ├── adapters/
