@@ -2,7 +2,7 @@
 **End-to-End Fine-Tuning Pipelines for Domain-Specific LLMs**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/sivasaiyadav8143/llm-finetuning-playbook/blob/main/LICENSE)
-[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)]
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97-Hugging%20Face-yellow)](https://huggingface.co/)
 [![Colab](https://img.shields.io/badge/Google%20Colab-F9AB00?logo=googlecolab&color=525252)](https://colab.research.google.com/)
 
