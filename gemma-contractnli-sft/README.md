@@ -139,7 +139,7 @@ base_model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.float16,
     device_map="auto"
 )
-model = PeftModel.from_pretrained(base_model, "your-username/contractlens-sft-gemma-2b")
+model = PeftModel.from_pretrained(base_model, "SivaSai8143/ContractNLI-gemma-2b-sft-lora-adapter")
 tokenizer = AutoTokenizer.from_pretrained("google/gemma-2b")
 
 def classify(premise, hypothesis):
