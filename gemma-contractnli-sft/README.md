@@ -35,7 +35,7 @@ Given a **Premise** (contract clause) and a **Hypothesis** (legal statement), th
 | **Supervised Fine-Tuning (SFT)** | Explicitly teaches the model to map `(Premise, Hypothesis) -> Label` via instruction prompts. Unlike continued pretraining (CLM loss), SFT forces the model to *reason* about the relationship between two texts, not just predict the next token. |
 | **LoRA (Low-Rank Adaptation)** | Reduces trainable parameters from 2.1B to ~30M (< 2%). This makes fine-tuning feasible on 16GB VRAM and prevents catastrophic forgetting of the base model's general knowledge. |
 | **QLoRA (4-bit Quantization)** | Shrinks the base model memory footprint to ~1.5GB, leaving room for gradients and activations on a T4 GPU. |
-| **Gemma-2B** | Selected for its strong reasoning ability and compact size—the perfect balance for resource-constrained environments. |
+| **Gemma-2B** | Selected for its strong reasoning ability and compact size—the perfect balance for resource-constrained environments. [[Model Card]](https://huggingface.co/google/gemma-2b) |
 
 ### Why Not Non-Instruction (Continued Pretraining)?
 Continued pretraining on only ~7,000 contract clauses would cause rapid overfitting and doesn't teach the model how to *compare* two statements. SFT is the correct tool for this classification task.
@@ -49,7 +49,7 @@ Continued pretraining on only ~7,000 contract clauses would cause rapid overfitt
 - **Splits used:** 7,000 training / 1,000 validation / 1,600 test (test set kept full for unbiased evaluation).
 - **Label Distribution (Train):** Balanced across Entailment, Neutral, and Contradiction.
 
-> *We downsampled the training set to fit within Google Colab's free runtime limits while preserving statistical rigor in final evaluation.*
+> *I downsampled the training set to fit within Google Colab's free runtime limits while preserving statistical rigor in final evaluation.*
 
 ---
 
@@ -122,9 +122,45 @@ contractlens-sft/
 ```
 ---
 
-### Output Artifacts
-- LoRA adapter → `SivaSai8143/pharma-tinyllama-dpo-lora-adapter`
+## 🤗 Model on Hugging Face Hub
 
+The fine-tuned LoRA adapters are available for download and inference:
+
+- LoRA adapter → [`ContractNLI-gemma-2b-sft-lora-adapter`](https://huggingface.co/SivaSai8143/ContractNLI-gemma-2b-sft-lora-adapter/tree/main)
+
+### Quick Load
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import PeftModel
+
+base_model = AutoModelForCausalLM.from_pretrained(
+    "google/gemma-2b",
+    torch_dtype=torch.float16,
+    device_map="auto"
+)
+model = PeftModel.from_pretrained(base_model, "your-username/contractlens-sft-gemma-2b")
+tokenizer = AutoTokenizer.from_pretrained("google/gemma-2b")
+
+def classify(premise, hypothesis):
+    prompt = f"""<|user|>
+    Premise: {premise}
+    Hypothesis: {hypothesis}
+    Classify the relationship as entailment, neutral, or contradiction.
+    <|assistant|>"""
+
+    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512)
+    inputs = {k: v.to(model.device) for k, v in inputs.items()}
+    outputs = model.generate(**inputs, max_new_tokens=5, temperature=0.0, do_sample=False)
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    if "<|assistant|>" in response:
+        response = response.split("<|assistant|>")[-1].strip().lower()
+    if "entailment" in response:
+        return "entailment"
+    elif "contradiction" in response:
+        return "contradiction"
+    return "neutral"
+```
 ---
 
 ## Disclaimer
