@@ -72,9 +72,11 @@ All three stages are trained on the **same small pharma corpus** (Metformin phar
 │   ├── pharma_instruction_dataset.jsonl        # instruction/response pairs (Stage 2)
 │   └── pharma_preference_dataset.jsonl         # prompt/chosen/rejected pairs (Stage 3)
 ├── huggingface/
-│   └── 1_Non_Instruction_Causal_LLM_Fine_Tuning_or_Domain_Adaptive_Continued_Pretraining.ipynb     # full HF + PEFT + TRL pipeline (Colab)
+│   ├── 1_Non_Instruction_Causal_LLM_Fine_Tuning_or_Domain_Adaptive_Continued_Pretraining.ipynb     # full HF + PEFT + TRL pipeline (Colab)
+│   ├── 2_Non_Instruction_Causal_LLM_+_Instruction_Fine_Tuning.ipynb  
+│   └── 3_Non_Instruction_Causal_LLM_+_Instruction_+_Preference_Tuning_with_DPO.ipynb   
 ├── unsloth/
-│   └── (coming soon)
+│   └── End-to-End-LLM-Finetuning-with-Unsloth.ipynb
 └── README.md
 ```
 
@@ -273,6 +275,75 @@ Each record is formatted into an Alpaca-style prompt:
 - **Same corpus across all 3 stages** — isolates the effect of each fine-tuning technique on identical domain knowledge, making before/after comparisons meaningful
 - **`-100` label masking on padding** — ensures loss is computed only on real tokens during instruction tuning
 - **DPO with `ref_model=None`** — lets TRL manage the reference policy automatically, simplifying the preference-tuning setup
+
+---
+
+## Key Learnings:
+
+### 1. What does packing=True do in SFT training?
+"packing=True does not pack the entire dataset at once."
+##### Instead, it:
+*   Dynamically combines multiple short samples
+*   Packs them into sequences up to max_seq_length (e.g., 512 tokens)
+##### Example:
+> Sample A (120 tokens)
+> + Sample B (200 tokens)
+> + Sample C (80 tokens)
+> = One 400-token training sequence
+
+It improves GPU utilization and reduces padding waste.
+
+### 2. What is the difference between RIGHT and LEFT padding?<br>
+#### 🔹 1. RIGHT Padding (Used in SFT / Stage 1 & 2)
+##### Format:
+> [TEXT TEXT TEXT TEXT PAD PAD PAD]
+##### Example:
+
+
+> Instruction + Response:
+"Explain metformin → Metformin is a drug"
+
+> After tokenization:
+[Explain metformin Metformin is a drug PAD PAD PAD]
+
+##### Why RIGHT padding is used:
+
+
+*   Best for causal language modeling (next-token prediction)
+*   Keeps real text at the beginning
+*   Padding is ignored naturally by attention
+*   Stable for training single sequences
+
+##### Used in:
+*   Stage 1 (domain pretraining)
+*   Stage 2 (instruction SFT)
+
+#### 🔹 2. LEFT Padding (Used in DPO / Stage 3)
+##### Format:
+
+> [PAD PAD PAD TEXT TEXT TEXT TEXT]
+##### Example:
+
+
+> Prompt + Response:
+"Explain metformin → Metformin is a drug"
+
+> After tokenization:
+[PAD PAD PAD Explain metformin Metformin is a drug]
+
+##### Why LEFT padding is used:
+
+*   To compare two sequences token-by-token under the same prompt alignment”
+*   Ensures prompt ends at same position across samples
+*   Aligns chosen vs rejected sequences properly
+*   Required for correct probability comparison in DPO
+*   Makes batching stable for pairwise training
+
+##### Used in:
+*   Stage 3 (DPO / preference tuning)
+
+
+
 
 ---
 
