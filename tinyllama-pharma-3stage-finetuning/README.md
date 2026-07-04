@@ -386,7 +386,7 @@ After applying these fixes:
 
 ## Tech Stack
 
-`transformers` · `peft` · `trl` · `datasets` · `accelerate` · `bitsandbytes` · `pymupdf` · Google Colab (T4 GPU)
+`transformers` · `peft` · `trl` · `datasets` · `accelerate` · `bitsandbytes` · `pymupdf`. `unsloth` · Google Colab (T4 GPU)
 
 ---
 
