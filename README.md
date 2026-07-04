@@ -101,6 +101,7 @@ llm-finetuning-playbook/
 │   │   ├── adapter_config.json
 │   │   └── adapter_model.safetensors
 │   ├── gemma_contract_nli_lora_sft.ipynb   # Colab notebook
+│   ├── unsloth_gemma_contract_nli_lora_sft.ipynb  # Unsloth Complete Colab notebook
 │   └── README.md                          # Legal project details
 │
 ├── .gitignore

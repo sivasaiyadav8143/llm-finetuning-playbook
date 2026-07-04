@@ -30,7 +30,7 @@ Given a **Premise** (contract clause) and a **Hypothesis** (legal statement), th
 
 ## 🧠 Methodology: Why SFT + LoRA?
 
-| Component | Why We Chose It |
+| Component | Why i Chose It |
 | :--- | :--- |
 | **Supervised Fine-Tuning (SFT)** | Explicitly teaches the model to map `(Premise, Hypothesis) -> Label` via instruction prompts. Unlike continued pretraining (CLM loss), SFT forces the model to *reason* about the relationship between two texts, not just predict the next token. |
 | **LoRA (Low-Rank Adaptation)** | Reduces trainable parameters from 2.1B to ~30M (< 2%). This makes fine-tuning feasible on 16GB VRAM and prevents catastrophic forgetting of the base model's general knowledge. |
@@ -113,7 +113,8 @@ pip install -q scikit-learn matplotlib seaborn
 
 ```text
 contractlens-sft/
-├── contractlens_sft.ipynb      # Complete Colab notebook
+├── gemma_contract_nli_lora_sft.ipynb      # Complete Colab notebook
+├── unsloth_gemma_contract_nli_lora_sft.ipynb  # Unsloth Complete Colab notebook
 ├── README.md                   # This file
 ├── lora-adapters/              # Saved PEFT weights (uploaded to Hugging Face Hub)
    ├── adapter_config.json
@@ -134,7 +135,7 @@ During early training runs, the loss would start reasonably but then spontaneous
 The learning rate (`2e-4` initially, later `5e-5`) was too aggressive for our small dataset (7,000 samples). The model's weights were taking steps so large that they overflowed the numerical limits of 16-bit floating-point precision (FP16), corrupting the entire model.
 
 **The Fix:**
-We applied three critical adjustments to stabilize training:
+I applied three critical adjustments to stabilize training:
 1. **Reduced Learning Rate:** Lowered from `5e-5` to `1e-5`.
 2. **Added Weight Decay:** Introduced `weight_decay=0.01` to penalize excessively large weights.
 3. **Tightened Gradient Clipping:** Reduced `max_grad_norm` from `0.3` to `0.1` to physically cap the step size.
@@ -146,7 +147,7 @@ After these changes, the loss descended smoothly without crashing.
 ### Challenge 2: Loss Reporting Discrepancy (HF vs. Unsloth)
 
 **The Observation:** 
-When we switched from standard Hugging Face (HF) to the Unsloth library, we noticed a jarring difference:
+When i switched from standard Hugging Face (HF) to the Unsloth library, i noticed a jarring difference:
 - **HF reported loss:** Started around `1.4` (average).
 - **Unsloth reported loss:** Started around `1145` (summed).
 
@@ -156,7 +157,7 @@ This is not a bug—it's a difference in *what* each library logs.
 - **Unsloth** reports the **total (summed) loss for the entire batch**, because its optimized Triton kernels calculate this sum natively for speed.
 
 **The Mathematical Proof:**
-To convert this to the standard Hugging Face (HF) average loss, we calculated the actual non-padded sequence length for our dataset:
+To convert this to the standard Hugging Face (HF) average loss, i calculated the actual non-padded sequence length for our dataset:
 
 Given our configuration:
 - **Average non-padded sequence length:** `179.53` tokens (measured on our 7,000-sample training subset).
