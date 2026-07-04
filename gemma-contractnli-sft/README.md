@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 > **High-accuracy Legal Natural Language Inference (NLI) on a budget.**  
-> Fine-tuned Gemma-2B with LoRA & SFT on the ContractNLI benchmark—optimized to run on a free Google Colab T4 GPU.
+> Fine-tuned Gemma-2B with LoRA & SFT on the ContractNLI benchmark—implemented with both Hugging Face (baseline) and Unsloth (optimized), achieving 1.8–2.3× faster training and ~70% lower memory usage on a free Colab T4 GPU.
 
 ---
 
