@@ -121,6 +121,53 @@ contractlens-sft/
 
 ```
 ---
+## 🛠️ Challenges & Debugging
+
+Throughout this project,while working with unsloth, i encountered and resolved two critical technical challenges that are common in resource-constrained fine-tuning.
+
+### Challenge 1: Gradient Explosion → `NaN` Loss
+
+**The Problem:** 
+During early training runs, the loss would start reasonably but then spontaneously spike to `NaN` (Not a Number) around steps 200–700. 
+
+**The Root Cause:** 
+The learning rate (`2e-4` initially, later `5e-5`) was too aggressive for our small dataset (7,000 samples). The model's weights were taking steps so large that they overflowed the numerical limits of 16-bit floating-point precision (FP16), corrupting the entire model.
+
+**The Fix:**
+We applied three critical adjustments to stabilize training:
+1. **Reduced Learning Rate:** Lowered from `5e-5` to `1e-5`.
+2. **Added Weight Decay:** Introduced `weight_decay=0.01` to penalize excessively large weights.
+3. **Tightened Gradient Clipping:** Reduced `max_grad_norm` from `0.3` to `0.1` to physically cap the step size.
+
+After these changes, the loss descended smoothly without crashing.
+
+---
+
+### Challenge 2: Loss Reporting Discrepancy (HF vs. Unsloth)
+
+**The Observation:** 
+When we switched from standard Hugging Face (HF) to the Unsloth library, we noticed a jarring difference:
+- **HF reported loss:** Started around `1.4` (average).
+- **Unsloth reported loss:** Started around `1145` (summed).
+
+**The Explanation:** 
+This is not a bug—it's a difference in *what* each library logs.
+- **Hugging Face** reports the **average cross-entropy loss per token**.
+- **Unsloth** reports the **total (summed) loss for the entire batch**, because its optimized Triton kernels calculate this sum natively for speed.
+
+**The Mathematical Proof:**
+To convert this to the standard Hugging Face (HF) average loss, we calculated the actual non-padded sequence length for our dataset:
+
+Given our configuration:
+- **Average non-padded sequence length:** `179.53` tokens (measured on our 7,000-sample training subset).
+- **Effective batch size:** `8` samples (`per_device_train_batch_size=1 × gradient_accumulation_steps=8`).
+
+**Conversion:**
+```math
+\text{Total tokens per batch} = 8 \times 179.53 = 1436.26
+\text{Average Loss (HF-style)} = \frac{1145.62}{1436.26} \approx 0.7976
+```
+---
 
 ## 🤗 Model on Hugging Face Hub
 
