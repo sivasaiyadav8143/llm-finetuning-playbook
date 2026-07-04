@@ -342,7 +342,15 @@ It improves GPU utilization and reduces padding waste.
 ##### Used in:
 *   Stage 3 (DPO / preference tuning)
 
+### 3. Can I change “Instruction” to “Prompt” in my format?
+Yes.
 
+The model does not care about wording like:
+*   Instruction
+*   Prompt
+*   Question
+It only learns structure:
+> Input → Output mapping
 
 
 ---
