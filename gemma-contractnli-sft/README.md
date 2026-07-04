@@ -165,7 +165,7 @@ Given our configuration:
 
 **Conversion:**
 ```math
-\text{Total tokens per batch} = 8 \times 179.53 = 1436.26
+\text{Total tokens per batch} = 8 \times 179.53 = 1436.26 <br>
 \text{Average Loss (HF-style)} = \frac{1145.62}{1436.26} \approx 0.7976
 ```
 ---
