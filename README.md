@@ -94,6 +94,10 @@ llm-finetuning-playbook/
 │   │   └── pharma_preference_dataset.jsonl
 │   ├── huggingface/                       # Hugging Face + PEFT + TRL notebooks
 │   │   └── 1_Non_Instruction_Causal_LM_Fine_Tuning_or_Domain_Adaptive_Continued_Pretraining.ipynb
+|   │   ├── 2_Non_Instruction_Causal_LLM_+_Instruction_Fine_Tuning.ipynb
+|   │   └── 3_Non_Instruction_Causal_LLM_+_Instruction_+_Preference_Tuning_with_DPO.ipynb
+│   ├── unsloth/                       
+│   │   └── End-to-End-LLM-Finetuning-with-Unsloth.ipynb
 │   └── README.md                          # Pharma project details
 │
 ├── gemma-contractnli-sft/                # Legal NLI fine-tuning
