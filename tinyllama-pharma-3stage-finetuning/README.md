@@ -352,7 +352,36 @@ The model does not care about wording like:
 It only learns structure:
 > Input → Output mapping
 
+### 4. How did i handle gradient explosion (loss → NaN) during training?
+During training, I encountered gradient explosion, where the loss became NaN due to unstable and excessively large gradient updates.
 
+To fix this, I:
+*   Reduced the learning rate to 5e-5
+*   Applied gradient clipping using max_grad_norm = 0.1
+These changes stabilized training and prevented unstable updates.
+
+##### What is Learning Rate?
+The learning rate controls how big a step the model takes while updating its weights during training.
+*   High learning rate → large updates → faster but unstable training (can cause NaN loss)
+*   Low learning rate → smaller updates → slower but more stable training
+In this case, reducing it to 5e-5 helped prevent the model from “overshooting” optimal weights.
+
+##### What is max_grad_norm (Gradient Clipping)?
+max_grad_norm limits the size of gradients during backpropagation.
+*   If gradients become too large, they are scaled down (clipped)
+*   This prevents sudden extreme updates to model weights
+
+##### Example:
+> Before clipping: gradient = 50 (too large ❌)
+> After clipping:  gradient = 0.1 (safe ✔)
+
+Setting max_grad_norm = 0.1 ensured training remained stable by preventing gradient explosion.
+##### Final Result
+After applying these fixes:
+
+*   Training stabilized
+*   No more NaN loss
+*   Final validation loss improved to ~16.8
 ---
 
 ## Tech Stack
