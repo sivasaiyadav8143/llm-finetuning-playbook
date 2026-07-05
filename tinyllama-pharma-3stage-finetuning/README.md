@@ -138,9 +138,6 @@ q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj
 - LoRA adapter → `SivaSai8143/pharma-tinyllama-non-instruction-lora-adapter`
 - Merged model → `SivaSai8143/pharma-tinyllama-non-instruction-merged`
 
-### Sample Inference (text continuation)
-> _[space reserved for run output — completions for the 3 continuation prompts]_
-
 ---
 
 ## Stage 2 — Instruction Fine-Tuning (SFT)
@@ -206,9 +203,6 @@ Each record is formatted into an Alpaca-style prompt:
 - LoRA adapter → `SivaSai8143/pharma-tinyllama-instruction-lora-adapter`
 - Merged model → `SivaSai8143/pharma-tinyllama-instruction-merged`
 
-### Sample Inference (Q&A)
-> _[space reserved for run output — model responses for the 4 test questions]_
-
 ---
 
 ## Stage 3 — Preference Tuning with DPO
@@ -253,8 +247,74 @@ Each record is formatted into an Alpaca-style prompt:
 - LoRA adapter → `SivaSai8143/pharma-tinyllama-dpo-lora-adapter`
 - Final merged model → `SivaSai8143/pharma-tinyllama-dpo-merged`
 
-### Sample Inference (preference-tuned)
-> _[space reserved for run output — model responses for the 4 preference-tuned test questions]_
+---
+
+## Evaluation Strategy
+
+### Why separate metrics per stage?
+ 
+Each fine-tuning stage has a fundamentally different objective — continued pretraining teaches domain language, SFT teaches instruction-following, and DPO teaches preference alignment. A single metric cannot capture all three. Using the right metric per stage shows the model is actually learning what each stage intends to teach, rather than optimising a proxy signal that happens to correlate with training loss.
+ 
+---
+
+### Stage 1 — Perplexity
+ 
+**What it is:**
+Perplexity measures how confidently the model predicts the next token on unseen text. It is computed as `e ^ validation_loss`, where validation_loss is the average cross-entropy loss over the held-out pharma paragraphs. Intuitively — the lower the perplexity, the less "surprised" the model is by pharma text.
+ 
+**Why this metric for this stage:**
+Stage 1 is continued pretraining — pure next-token prediction on raw domain text. There are no instructions, no reference answers, and no preference pairs to compare against. Perplexity is the natural and standard metric for this objective because it directly measures how well the model has internalised the statistical patterns of the domain corpus. Comparing base model perplexity vs Stage-1 perplexity on the same held-out pharma sentences gives a clean before/after signal of domain adaptation.
+
+**How to interpret the score:**
+Lower perplexity = better domain adaptation.
+ 
+| Perplexity Range | Meaning |
+|---|---|
+| 20 – 50 | Base model — pharma text is largely unfamiliar |
+| 10 – 20 | Partial domain adaptation |
+| 5 – 10 | Strong domain adaptation |
+| < 5 | Near-perfect fit (risk of overfitting on small corpus) |
+ 
+A meaningful drop from base model perplexity to Stage-1 perplexity on the same pharma validation set confirms the model has absorbed domain vocabulary, terminology, and writing style.
+ 
+**Limitations:**
+Perplexity measures fluency and domain fit, not factual correctness or instruction-following ability. A model with low perplexity on pharma text can still generate plausible-sounding but factually wrong statements. This is why Stage 2 evaluation shifts to answer quality metrics.
+
+---
+ 
+### Stage 2 — ROUGE-L + BERTScore
+ 
+**What they are:**
+
+**ROUGE-L** (Recall-Oriented Understudy for Gisting Evaluation — Longest Common Subsequence) measures the longest sequence of tokens that appears in both the generated answer and the reference answer, in the same order, without requiring them to be contiguous. It rewards correct pharma terminology and phrase-level matches while being more flexible than exact n-gram overlap.
+ 
+- Score range: 0.0 to 1.0 — higher is better
+- 0.0 = no overlap with reference, 1.0 = exact match
+**BERTScore** measures semantic similarity between the generated answer and the reference answer using contextual embeddings from a pretrained BERT model. Unlike ROUGE, it understands meaning — it rewards correct paraphrases even when the exact words differ. We report the F1 score, which balances precision (how much of the generation matches the reference) and recall (how much of the reference is covered by the generation).
+ 
+- Score range: 0.0 to 1.0 — higher is better
+- Typical range for good generations: 0.85+
+- Scores below 0.70 suggest the generation is semantically distant from the reference
+**Why these metrics for this stage:**
+Stage 2 is instruction fine-tuning — the model must generate structured answers to pharma questions. We need metrics that evaluate answer quality, not just next-token prediction. ROUGE-L catches whether the model uses the correct pharma terminology and phrase structure. BERTScore catches whether the model is saying the right thing semantically, even if worded differently. Together they cover both surface form and meaning — neither alone is sufficient for evaluating open-ended generation.
+ 
+ROUGE-1 and ROUGE-2 (unigram and bigram overlap) are intentionally excluded — they add noise without adding insight for open-ended generation where paraphrasing is natural and expected.
+ 
+**How to interpret the scores:**
+ 
+| Metric | Range | Interpretation |
+|---|---|---|
+| ROUGE-L | 0.0 – 0.2 | Low lexical overlap — model paraphrases heavily or misses key terms |
+| ROUGE-L | 0.2 – 0.5 | Moderate overlap — model uses some correct terminology |
+| ROUGE-L | 0.5+ | Strong overlap — model closely matches reference phrasing |
+| BERTScore F1 | < 0.70 | Semantically distant from reference |
+| BERTScore F1 | 0.70 – 0.85 | Semantically related — model understands the domain |
+| BERTScore F1 | 0.85+ | Semantically close — strong instruction-following quality |
+ 
+On a demo-scale dataset (48 samples, max_steps=5), ROUGE-L will naturally be low due to paraphrase penalty and limited training — this is expected and does not indicate model failure. BERTScore is the more meaningful signal at this scale.
+ 
+**Limitations:**
+Both metrics require reference answers — they measure how close the model is to a specific ground truth, not absolute factual correctness. A model can score low on ROUGE-L while still generating a factually accurate answer worded differently. These metrics are directional signals at demo scale, not definitive benchmarks.
 
 ---
 
@@ -265,6 +325,69 @@ Each record is formatted into an Alpaca-style prompt:
 | 1. Non-instruction | [`SivaSai8143/pharma-tinyllama-non-instruction-lora-adapter`](https://huggingface.co/SivaSai8143/pharma-tinyllama-non-instruction-lora-adapter) | [`SivaSai8143/pharma-tinyllama-non-instruction-merged`](https://huggingface.co/SivaSai8143/pharma-tinyllama-non-instruction-merged) |
 | 2. Instruction (SFT) | [`SivaSai8143/pharma-tinyllama-instruction-lora-adapter`](https://huggingface.co/SivaSai8143/pharma-tinyllama-instruction-lora-adapter) | [`SivaSai8143/pharma-tinyllama-instruction-merged`](https://huggingface.co/SivaSai8143/pharma-tinyllama-instruction-merged) |
 | 3. Preference (DPO) | [`SivaSai8143/pharma-tinyllama-dpo-lora-adapter`](https://huggingface.co/SivaSai8143/pharma-tinyllama-dpo-lora-adapter) | [`SivaSai8143/pharma-tinyllama-dpo-merged`](https://huggingface.co/SivaSai8143/pharma-tinyllama-dpo-merged) |
+
+---
+### Stage 3 — Reward Metrics + Win Rate
+ 
+**What they are:**
+ 
+**Reward Metrics** are logged internally by `DPOTrainer` during training. DPO works by assigning implicit reward scores to chosen and rejected responses — these metrics track how well the training is separating them.
+ 
+**rewards/chosen:** The mean implicit reward the model assigns to the correct (chosen) responses. A positive and increasing value means the model is learning to score accurate answers higher.
+ 
+**rewards/rejected:** The mean implicit reward the model assigns to the plausible-but-wrong (rejected) responses. A negative and decreasing value means the model is learning to down-score incorrect answers.
+ 
+**rewards/margins:** The difference between rewards/chosen and rewards/rejected (chosen − rejected). This is the most direct training signal — a positive and widening margin confirms DPO is successfully separating good answers from bad ones. A margin near zero means the model treats chosen and rejected as equally likely.
+ 
+**rewards/accuracies:** The percentage of training examples where the model correctly ranks the chosen response higher than the rejected response.
+ 
+| Accuracy | Meaning |
+|---|---|
+| 0.50 | Random — DPO had no effect |
+| 0.60 – 0.70 | Moderate alignment |
+| 0.70+ | Strong alignment — model reliably prefers correct answers |
+| 1.00 | Perfect on training set (expected on very small datasets) |
+ 
+**Win Rate** is a post-training inference evaluation. For each prompt in the test set the model generates a free-form response, which is then compared against both the chosen and rejected references using BERTScore F1. The model wins if its generated response is semantically closer to the chosen (correct) answer than to the rejected (wrong) answer.
+ 
+- Win Rate = number of wins / total test samples
+- 50% = random baseline (no preference alignment)
+- 60 – 70% = moderate alignment
+- 70%+ = strong alignment — DPO meaningfully improved answer quality
+**Why these metrics for this stage:**
+Stage 3 is preference alignment — the goal is not to generate text that matches a reference, but to steer the model toward preferring accurate answers over plausible-but-wrong ones. ROUGE and BERTScore against a single reference cannot capture this. Reward metrics measure whether DPO training converged correctly (training signal). Win rate measures whether the final model actually generalises that preference to unseen prompts (real-world signal). Both are needed — a model can show healthy reward margins during training but still fail to generalise, which win rate catches.
+ 
+**How to interpret the scores:**
+ 
+| Metric | Good signal | Strong signal |
+|---|---|---|
+| rewards/chosen | Positive and increasing | > 0 at end of training |
+| rewards/rejected | Negative and decreasing | < 0 at end of training |
+| rewards/margins | Positive and widening | > 0.3 |
+| rewards/accuracies | > 0.60 | > 0.70 |
+| Win Rate | > 0.60 | > 0.70 |
+ 
+**Limitations:**
+Reward metrics reflect training-set behaviour only — they do not measure factual accuracy or generalisation. Win rate on a small test set (~7 samples after an 85/15 split of 48 examples) has high variance and should be treated as a directional signal. A larger dataset would give statistically robust results.
+
+---
+ 
+### Known Limitations
+ 
+- **Demo-scale dataset** — 48 samples each for instruction and preference stages. All evaluation metrics are directional signals, not production benchmarks. Results should not be compared directly against published fine-tuning papers.
+- **max_steps=5 for SFT and DPO** — intentionally limited for reproducibility on a free Colab T4 GPU within session time limits. This is not representative of full fine-tuning convergence.
+- **Small test set** — after an 85/15 train/validation split of 48 samples, the test set contains approximately 7 samples. Win rate and BERTScore at this scale have high variance.
+- **Single domain, single PDF** — the pharma corpus covers 6 topics from one document. The model's domain adaptation is narrow and should not be generalised beyond this corpus.
+---
+ 
+### What Would Improve Results
+ 
+- **Larger dataset** — 1,000–10,000 instruction/preference pairs would give statistically meaningful metrics and meaningfully better model behaviour
+- **Full epoch training** — removing `max_steps=5` and training to convergence (5–10 epochs for SFT, 3–5 for DPO) on a larger dataset
+- **Larger base model** — Llama-3-8B or Mistral-7B would bring stronger priors and better instruction-following out of the box
+- **Broader corpus** — expanding beyond a single PDF to a curated pharma corpus (PubMed abstracts, clinical guidelines, drug monographs)
+- **Standardised benchmarks** — evaluating against domain-specific benchmarks such as PubMedQA or MedQA via [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness) would allow direct comparison with published models
+- **Reward model evaluation** — using a trained reward model (rather than BERTScore) for win rate computation gives a more reliable preference signal
 
 ---
 
