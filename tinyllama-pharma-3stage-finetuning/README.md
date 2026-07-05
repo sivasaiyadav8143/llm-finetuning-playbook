@@ -317,16 +317,6 @@ On a demo-scale dataset (48 samples, max_steps=5), ROUGE-L will naturally be low
 Both metrics require reference answers — they measure how close the model is to a specific ground truth, not absolute factual correctness. A model can score low on ROUGE-L while still generating a factually accurate answer worded differently. These metrics are directional signals at demo scale, not definitive benchmarks.
 
 ---
-
-## All Hugging Face Artifacts
-
-| Stage | Adapter | Merged Model |
-|---|---|---|
-| 1. Non-instruction | [`SivaSai8143/pharma-tinyllama-non-instruction-lora-adapter`](https://huggingface.co/SivaSai8143/pharma-tinyllama-non-instruction-lora-adapter) | [`SivaSai8143/pharma-tinyllama-non-instruction-merged`](https://huggingface.co/SivaSai8143/pharma-tinyllama-non-instruction-merged) |
-| 2. Instruction (SFT) | [`SivaSai8143/pharma-tinyllama-instruction-lora-adapter`](https://huggingface.co/SivaSai8143/pharma-tinyllama-instruction-lora-adapter) | [`SivaSai8143/pharma-tinyllama-instruction-merged`](https://huggingface.co/SivaSai8143/pharma-tinyllama-instruction-merged) |
-| 3. Preference (DPO) | [`SivaSai8143/pharma-tinyllama-dpo-lora-adapter`](https://huggingface.co/SivaSai8143/pharma-tinyllama-dpo-lora-adapter) | [`SivaSai8143/pharma-tinyllama-dpo-merged`](https://huggingface.co/SivaSai8143/pharma-tinyllama-dpo-merged) |
-
----
 ### Stage 3 — Reward Metrics + Win Rate
  
 **What they are:**
@@ -505,6 +495,17 @@ After applying these fixes:
 *   Training stabilized
 *   No more NaN loss
 *   Final validation loss improved to ~16.8
+
+---
+
+## All Hugging Face Artifacts
+
+| Stage | Adapter | Merged Model |
+|---|---|---|
+| 1. Non-instruction | [`SivaSai8143/pharma-tinyllama-non-instruction-lora-adapter`](https://huggingface.co/SivaSai8143/pharma-tinyllama-non-instruction-lora-adapter) | [`SivaSai8143/pharma-tinyllama-non-instruction-merged`](https://huggingface.co/SivaSai8143/pharma-tinyllama-non-instruction-merged) |
+| 2. Instruction (SFT) | [`SivaSai8143/pharma-tinyllama-instruction-lora-adapter`](https://huggingface.co/SivaSai8143/pharma-tinyllama-instruction-lora-adapter) | [`SivaSai8143/pharma-tinyllama-instruction-merged`](https://huggingface.co/SivaSai8143/pharma-tinyllama-instruction-merged) |
+| 3. Preference (DPO) | [`SivaSai8143/pharma-tinyllama-dpo-lora-adapter`](https://huggingface.co/SivaSai8143/pharma-tinyllama-dpo-lora-adapter) | [`SivaSai8143/pharma-tinyllama-dpo-merged`](https://huggingface.co/SivaSai8143/pharma-tinyllama-dpo-merged) |
+
 ---
 
 ## Tech Stack
