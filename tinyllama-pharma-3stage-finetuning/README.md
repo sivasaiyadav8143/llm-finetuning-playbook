@@ -455,6 +455,8 @@ It improves GPU utilization and reduces padding waste.
 ##### Used in:
 *   Stage 3 (DPO / preference tuning)
 
+DPO requires left padding because it computes per-token log-probabilities on the response portion of chosen and rejected sequences — left padding ensures the response always ends at a consistent position, making the reward signal comparison between chosen and rejected reliable.
+
 ### 3. Can I change “Instruction” to “Prompt” in my format?
 Yes.
 
