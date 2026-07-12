@@ -12,8 +12,8 @@
 ## Table of Contents
 
 1. [Problem Statement](#problem-statement)
-2. [Why SFT + LoRA?](#problem-statement)
-3. [Dataset: ContractNLI](#dataset-contractnli)
+2. [Why SFT + LoRA?](#methodology-why-sft--lora)
+3. [Dataset: ContractNLI](#dataset-contractnli-contractnli_a)
 4. [LoRA Trainable Parameter Calculation for Gemma‑2B](#lora-trainable-parameter-calculation-for-gemma2b)
 5. [Results & Evaluation](#results--evaluation)
 6. [Hardware & Setup](#hardware--setup)
@@ -42,7 +42,7 @@ Given a **Premise** (contract clause) and a **Hypothesis** (legal statement), th
 
 ---
 
-## 🧠 Methodology: Why SFT + LoRA?
+## Methodology: Why SFT + LoRA?
 
 | Component | Why i Chose It |
 | :--- | :--- |
@@ -56,7 +56,7 @@ Continued pretraining on only ~7,000 contract clauses would cause rapid overfitt
 
 ---
 
-## 📊 Dataset: ContractNLI (`contractnli_a`)
+## Dataset: ContractNLI (`contractnli_a`)
 
 - **Source:** [kiddothe2b/contract-nli](https://huggingface.co/datasets/kiddothe2b/contract-nli)
 - **Subset:** `contractnli_a` (truncated premises, fits 512-token limit).
@@ -140,7 +140,7 @@ Gemma‑2B has **18 transformer layers**.
 
 ---
 
-## 🚀 Results & Evaluation
+## Results & Evaluation
 
 ### Primary Metrics (Test Set, n=200)
 
@@ -161,7 +161,7 @@ Gemma‑2B has **18 transformer layers**.
 | **Macro Avg** | 0.4260 | 0.4721 | **0.4424** | 200 |
 | **Weighted Avg** | 0.5794 | 0.6350 | **0.5986** | 200 |
 
-### 🔍 Failure Mode Analysis (Why is Entailment 0.00?)
+### Failure Mode Analysis (Why is Entailment 0.00?)
 
 The model achieved **0.00 F1 for the Entailment class**, meaning it correctly classified *zero* of the 19 entailment examples in our test subset.
 
@@ -179,7 +179,7 @@ The model achieved **0.00 F1 for the Entailment class**, meaning it correctly cl
 
 ---
 
-## 🛠️ Hardware & Setup
+## Hardware & Setup
 
 - **Runtime:** Google Colab (Free Tier)
 - **GPU:** T4 (16GB VRAM)
@@ -209,7 +209,7 @@ contractlens-sft/
 
 ```
 ---
-## 🛠️ Challenges & Debugging
+## Challenges & Debugging
 
 Throughout this project,while working with unsloth, i encountered and resolved two critical technical challenges that are common in resource-constrained fine-tuning.
 
@@ -257,7 +257,7 @@ Given our configuration:
 ```
 ---
 
-## 🤗 Model on Hugging Face Hub
+## Model on Hugging Face Hub
 
 The fine-tuned LoRA adapters are available for download and inference:
 
