@@ -9,8 +9,22 @@
 
 ---
 
+## Table of Contents
 
-## 🎯 The Problem
+1. [Problem Statement](#problem-statement)
+2. [Why SFT + LoRA?](#problem-statement)
+3. [Dataset: ContractNLI](#dataset-contractnli)
+4. [LoRA Trainable Parameter Calculation for Gemma‑2B](#lora-trainable-parameter-calculation-for-gemma2b)
+5. [Results & Evaluation](#results--evaluation)
+6. [Hardware & Setup](#hardware--setup)
+7. [Repository Structure](#repository-structure)
+8. [Challenges & Debugging](#challenges--debugging)
+9. [Model on Hugging Face Hub](#model-on-hugging-face-hub)
+
+---
+
+
+## Problem Statement
 
 Legal professionals are overwhelmed by dense, jargon-filled contracts. AI can help by triaging clauses—but general-purpose LLMs struggle with legal logic and often hallucinate. 
 
