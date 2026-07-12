@@ -53,6 +53,79 @@ Continued pretraining on only ~7,000 contract clauses would cause rapid overfitt
 
 ---
 
+## LoRA Trainable Parameter Calculation for Gemma‑2B
+
+### LoRA Weight Decomposition
+**W = W₀ + ΔW**  
+**ΔW = B × A**
+
+#### What Each Term Means
+
+- **W₀ (Base Weight Matrix)**  
+  The original pretrained weight matrix of the model.  
+  It is **frozen** during LoRA training (not updated).
+
+- **W (Final Weight Matrix)**  
+  The effective weight used during inference.  
+  It combines the frozen base weights **W₀** with the learned LoRA update **ΔW**.
+
+- **ΔW (LoRA Update Matrix)**  
+  The low‑rank update added to the base weights.  
+  This is the **only part that gets trained** during LoRA.
+
+- **A (Down‑Projection Matrix)**  
+  Shape: *(r × in_features)*  
+  Projects the input into a smaller rank‑r space.
+
+- **B (Up‑Projection Matrix)**  
+  Shape: *(out_features × r)*  
+  Projects the rank‑r representation back to the original dimension.
+
+LoRA learns **A** and **B**, not the full weight matrix.  
+This is why LoRA is parameter‑efficient.
+
+Where:  
+- **A** has shape *(r × in_features)*  
+- **B** has shape *(out_features × r)*  
+
+### Trainable Parameters per Layer
+**LoRA Params = r × (in_features + out_features)**
+
+### LoRA Configuration
+**r = 16**
+
+#### q_proj Layer
+- **in = 2048**  
+- **out = 2048**
+
+**q_params = r × (in + out)**  
+→ **16 × (2048 + 2048)**  
+→ **16 × 4096**  
+→ **65,536**
+
+#### v_proj Layer
+- **in = 2048**  
+- **out = 256**
+
+**v_params = r × (in + out)**  
+→ **16 × (2048 + 256)**  
+→ **16 × 2304**  
+→ **36,864**
+
+### Total LoRA Parameters per Transformer Layer
+**params_per_layer = q_params + v_params**  
+→ **65,536 + 36,864**  
+→ **102,400**
+
+### Gemma‑2B Total LoRA Parameters
+Gemma‑2B has **18 transformer layers**.
+
+**total_lora_params = params_per_layer × num_layers**  
+→ **102,400 × 18**  
+→ **1,843,200**
+
+---
+
 ## 🚀 Results & Evaluation
 
 ### Primary Metrics (Test Set, n=200)
