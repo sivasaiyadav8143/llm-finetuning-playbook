@@ -290,11 +290,13 @@ Perplexity measures fluency and domain fit, not factual correctness or instructi
  
 - Score range: 0.0 to 1.0 — higher is better
 - 0.0 = no overlap with reference, 1.0 = exact match
+
 **BERTScore** measures semantic similarity between the generated answer and the reference answer using contextual embeddings from a pretrained BERT model. Unlike ROUGE, it understands meaning — it rewards correct paraphrases even when the exact words differ. We report the F1 score, which balances precision (how much of the generation matches the reference) and recall (how much of the reference is covered by the generation).
  
 - Score range: 0.0 to 1.0 — higher is better
 - Typical range for good generations: 0.85+
-- Scores below 0.70 suggest the generation is semantically distant from the reference
+- Scores below 0.70 suggest the generation is semantically distant from the reference  
+
 **Why these metrics for this stage:**
 Stage 2 is instruction fine-tuning — the model must generate structured answers to pharma questions. We need metrics that evaluate answer quality, not just next-token prediction. ROUGE-L catches whether the model uses the correct pharma terminology and phrase structure. BERTScore catches whether the model is saying the right thing semantically, even if worded differently. Together they cover both surface form and meaning — neither alone is sufficient for evaluating open-ended generation.
  
